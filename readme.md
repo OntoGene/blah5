@@ -4,9 +4,11 @@
 
 ### Use
 
-`curl -d text='This is a question' http://0.0.0.0:61455/spacy/`
+`curl -F file='@data/6234315.json' http://0.0.0.0:61455/ > out.json`
 
-`curl 127.0.0.1:61455/spacy?text=This+is+a+test`
+### To Do
+
+* Make it interoperable with PubAnnotation
 
 
 
