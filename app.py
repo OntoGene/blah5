@@ -92,7 +92,7 @@ def json_to_json(json_,tokenizer,parser,):
 		raise(e)
 		
 def json_to_spacy(json_,tokenizer=False,parser=False):
-	json_ = json.loads(json_)
+	json_ = json.loads(str(json_,encoding='utf-8'))
 	text = json_['text']
 
 	if not tokenizer:
@@ -199,7 +199,7 @@ def spacy_to_json(doc,text=False,annotations=False):
 		pre_json["relations"].append(relation_dict)
 
 	if annotations:
-		annos = json.loads(annotations)
+		annos = json.loads(str(annotations,encoding='utf-8')
 		if 'denotations' in annos:
 			deno_ids = set([deno['id'] for deno in pre_json['denotations']])
 			new_deno_ids = set([deno['id'] for deno in annos['denotations']])
