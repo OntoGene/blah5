@@ -45,11 +45,32 @@ def server():
 		# check if the post request has the file part
 		file = request.files['file']
 		if file.filename == '':
-			verboses('No selected file')
+			verbose('No selected file')
 		if file:
 			json_ = file.read()
 			json_ = json_to_json(json_,tokenizer=tokenizer,parser=parser)
 			return(json_to_response(json_))
+	
+	if request.method == 'POST' or 'curl' in request.headers['User-Agent'].lower():
+		
+		# 'text' can hide either in request.args or request.form
+		if 'text' in request.args and request.args['text'] is not '':
+			try:
+				json_ = text_to_json(request.args['text'])
+				return(json_to_response(json_))
+			except Exception as e:
+				error_log(e)
+				return("Error while processing request for '{}'. Check {} for more information.\n".format(request.args['text'],ERROR_FILE),500)
+			
+		if 'text' in request.form and request.form['text'] is not '':
+			try:
+				json_ = text_to_json(request.form['text'])
+				return(json_to_response(json_))
+			except Exception as e:
+				error_log(e)
+				return("Error while processing request for '{}'. Check {} for more information.\n".format(request.form['text'],ERROR_FILE),500)
+				
+		return(NO_TEXT_ERROR,400)
 	
 	if request.headers['Content-Type'] == 'application/json':
 		if 'text' in request.get_json():

@@ -7,7 +7,7 @@
 ### Use
 
 * `curl -F file='@data/6234315.json' http://0.0.0.0:61455/ > out.json`
-* PubAnnotation style: `curl -d text="example text" URL_of_annotation_web_service`
+* PubAnnotation style: `curl -d text="example text"   https://pub.cl.uzh.ch/projects/ontogene/blah5/`
 
 ### To Do
 
