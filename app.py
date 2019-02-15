@@ -43,7 +43,7 @@ def server():
 	
 	# so it's hiding in request.get_json()
 	
-	# curl -F file='@data/6234315.json' http://0.0.0.0:61455/ > out.json
+	# curl -F file='@data/6234315.json' https://pub.cl.uzh.ch/projects/ontogene/blah5/ > out.json
 	if 'file' in request.files:
 		verbose('request.files')
 		# check if the post request has the file part
@@ -51,7 +51,7 @@ def server():
 		if file_.filename == '':
 			verbose('No selected file')
 		if file_:
-			json_ = file.read()
+			json_ = file_.read()
 			json_ = json_to_json(json_,tokenizer=tokenizer,parser=parser)
 			return(json_to_response(json_))
 	
@@ -117,7 +117,11 @@ def json_to_spacy(json_,tokenizer=False,parser=False):
 		json_ = str(json_,encoding="utf-8")
 	except Exception:
 		pass
-	json_ = json.loads(json_)
+	
+	try:
+		json_ = json.loads(json_)
+	except Exception:
+		pass
 	text = json_['text']
 
 	if not tokenizer:
@@ -234,7 +238,12 @@ def spacy_to_json(doc,text=False,annotations=False):
 		except Exception:
 			pass
 		
-		annos = json.loads(annotations)
+		try:
+			annos = json.loads(annotations)
+		except:
+			pass
+			
+		annos = annotations
 
 		if 'denotations' in annos:
 
