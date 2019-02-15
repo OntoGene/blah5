@@ -41,6 +41,10 @@ def error_log(error,error_file=ERROR_FILE):
 ##############
 @app.route('/', methods=['GET', 'POST'])
 def server():
+	print(request.__dict__)
+	print(request.args, request.args.__dict__)
+	print(request.files, request.files.__dict__)
+	print(request.form, request.form.__dict__)
 	if request.method == 'POST' and 'file' in request.files:
 		# check if the post request has the file part
 		file = request.files['file']
@@ -72,7 +76,7 @@ def server():
 				
 		return(NO_TEXT_ERROR,400)
 	
-	if request.headers['Content-Type'] == 'application/json':
+	if request.method == 'POST' and request.headers['Content-Type'] == 'application/json':
 		if 'text' in request.get_json():
 			try:
 				json_ = text_to_json(request.get_json()['text'])
@@ -83,7 +87,7 @@ def server():
 				return("Error while processing request for '{}'. Check {} for more information.\n".format(request.get_json()['text'],ERROR_FILE),500)
 		return(NO_TEXT_ERROR_D,400)
 	
-	if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
+	if request.method == 'POST' and request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
 		if 'text' in request.form:
 			try:
 				json_ = text_to_json(request.form['text'])
