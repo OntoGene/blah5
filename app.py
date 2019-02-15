@@ -44,6 +44,7 @@ def server():
 	# so it's hiding in request.get_json()
 	
 	# curl -F file='@data/6234315.json' https://pub.cl.uzh.ch/projects/ontogene/blah5/ > out.json
+	# curl -F file='@data/6234315.json' http://0.0.0.0:61455/ > out.json
 	if 'file' in request.files:
 		verbose('request.files')
 		# check if the post request has the file part
@@ -241,11 +242,11 @@ def spacy_to_json(doc,text=False,annotations=False):
 		try:
 			annos = json.loads(annotations)
 		except:
-			pass
+			annos = annotations
 			
-		annos = annotations
+		
 
-		if 'denotations' in annos:
+		if 'denotations' in annos and False:
 
 			deno_ids = set([deno['id'] for deno in pre_json['denotations']])
 			new_deno_ids = set([deno['id'] for deno in annos['denotations']])
@@ -265,7 +266,7 @@ def spacy_to_json(doc,text=False,annotations=False):
 			pre_json["denotations"].extend(annos['denotations'])
 
 		
-		if 'relations' in annos:
+		if 'relations' in annos and False:
 			rel_ids = set([rel['id'] for rel in pre_json['relations']])
 			new_rel_ids = set([rel['id'] for rel in annos['relations']])
 			if rel_ids.intersection(new_rel_ids): 
@@ -275,8 +276,16 @@ def spacy_to_json(doc,text=False,annotations=False):
 		
 		if 'text' in annos and pre_json['text'] == False:
 			pre_json['text'] = annos['text']
+	pre_json = post_process(pre_json)
 
 	return(json.dumps(pre_json,sort_keys=True))
+	
+def post_process(json_):
+	if 'relations' in json_:
+		for relation in json_['relations']:
+			if relation['pred'] == '':
+				relation['pred'] = 'unspecified'
+	return json_
 	
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
