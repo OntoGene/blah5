@@ -1,5 +1,4 @@
 from flask import Flask, request, make_response
-from werkzeug.utils import secure_filename
 import spacy
 
 import argparse , sys
@@ -8,7 +7,7 @@ import json
 
 ERROR_FILE = 'error.log'
 
-NO_TEXT_ERROR = """No 'text' to process supplied. Use spacy?text=This+is+an+example."""
+NO_TEXT_ERROR = """No 'text' to process supplied. Use ?text=This+is+an+example."""
 NO_TEXT_ERROR_D = """No 'text' to process supplied. Use the following: curl -d text="This is an example"""
 
 app = Flask(__name__)
@@ -39,65 +38,44 @@ def error_log(error,error_file=ERROR_FILE):
 ##############
 # SERVER STUFF
 ##############
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['POST'])
 def server():
-	print(request.__dict__)
-	print(request.args, request.args.__dict__)
-	print(request.files, request.files.__dict__)
-	print(request.form, request.form.__dict__)
-	if request.method == 'POST' and 'file' in request.files:
+	
+	# so it's hiding in request.get_json()
+	
+	# curl -F file='@data/6234315.json' http://0.0.0.0:61455/ > out.json
+	if 'file' in request.files:
+		verbose('request.files')
 		# check if the post request has the file part
-		file = request.files['file']
-		if file.filename == '':
+		file_ = request.files['file']
+		if file_.filename == '':
 			verbose('No selected file')
-		if file:
+		if file_:
 			json_ = file.read()
 			json_ = json_to_json(json_,tokenizer=tokenizer,parser=parser)
 			return(json_to_response(json_))
 	
-	if request.method == 'POST' or 'curl' in request.headers['User-Agent'].lower():
+	# curl -H "Content-type:Application/json" -d '{"text":"example text"}' https://pub.cl.uzh.ch/projects/ontogene/blah5/
+	if 'application/json' in request.headers['CONTENT_TYPE'].lower():
+		verbose('request.get_json()')
+		json_ = request.get_json()
+		try:
+			json_ = json_to_json(json_, tokenizer, parser)
+			return(json_to_response(json_))
+		except Exception as e:
+			error_log(e)
+			return("Error while processing request for '{}'. Check {} for more information.\n".format(request.get_json()['text'],ERROR_FILE),500)
 		
-		# 'text' can hide either in request.args or request.form
-		if 'text' in request.args and request.args['text'] is not '':
-			try:
-				json_ = text_to_json(request.args['text'])
-				return(json_to_response(json_))
-			except Exception as e:
-				error_log(e)
-				return("Error while processing request for '{}'. Check {} for more information.\n".format(request.args['text'],ERROR_FILE),500)
-			
-		if 'text' in request.form and request.form['text'] is not '':
-			try:
-				json_ = text_to_json(request.form['text'])
-				return(json_to_response(json_))
-			except Exception as e:
-				error_log(e)
-				return("Error while processing request for '{}'. Check {} for more information.\n".format(request.form['text'],ERROR_FILE),500)
-				
-		return(NO_TEXT_ERROR,400)
-	
-	if request.method == 'POST' and request.headers['Content-Type'] == 'application/json':
-		if 'text' in request.get_json():
-			try:
-				json_ = text_to_json(request.get_json()['text'])
-				json_ = json_to_json(json_, tokenizer, parser)
-				return(json_to_response(json_))
-			except Exception as e:
-				error_log(e)
-				return("Error while processing request for '{}'. Check {} for more information.\n".format(request.get_json()['text'],ERROR_FILE),500)
-		return(NO_TEXT_ERROR_D,400)
-	
-	if request.method == 'POST' and request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
-		if 'text' in request.form:
-			try:
-				json_ = text_to_json(request.form['text'])
-				json_ = json_to_json(json_, tokenizer, parser)
-				return(json_to_response(json_))
-			except Exception as e:
-				error_log(e)
-				return("Error while processing request for '{}'. Check {} for more information.\n".format(request.form['text'],ERROR_FILE),500)
-		return(NO_TEXT_ERROR_D,400)
-		
+	# curl -d text="example text"   https://pub.cl.uzh.ch/projects/ontogene/blah5/
+	if 'text' in request.form:
+		verbose('request.form')
+		try:
+			json_ = text_to_json(request.form['text'])
+			json_ = json_to_json(json_, tokenizer, parser)
+			return(json_to_response(json_))
+		except Exception as e:
+			error_log(e)
+			return("Error while processing request for '{}'. Check {} for more information.\n".format(request.form['text'],ERROR_FILE),500)		
 	return("Unsupported media type.",415)
 
 def text_to_json(text):
