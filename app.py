@@ -123,7 +123,7 @@ def json_to_spacy(json_,tokenizer=False,parser=False):
 		json_ = json.loads(json_)
 	except Exception:
 		pass
-	text = json_['text']
+	text = json_['text'].strip()
 
 	if not tokenizer:
 		tokenizer = spacy.load('en',disable=['parser','ner'])
@@ -274,8 +274,10 @@ def spacy_to_json(doc,text=False,annotations=False):
 					relation['id'] = relation['id'] + '*'
 			pre_json["relations"].extend(annos['relations'])
 		
-		if 'text' in annos and pre_json['text'] == False:
-			pre_json['text'] = annos['text']
+		pre_json['text'] = doc.text
+		for token in doc:
+			if '5' in token.text:
+				print(token)
 	pre_json = post_process(pre_json)
 
 	return(json.dumps(pre_json,sort_keys=True))

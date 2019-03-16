@@ -1,7 +1,7 @@
 ### Installation / Running
 
 * It's in `/mnt/storage/karr/projects/clontogene/blah5`
-* Install `pip -r install requirements.txt`
+* Install `pip install -r requirements.txt`
 * python -m spacy download en`
 
 ### Use
